@@ -35,10 +35,23 @@ const User = db.define(
         notEmpty: true,
       },
     },
+    createdAt: {
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+    },
   },
   {
     freezeTableName: true,
   },
 );
+db.sync()
+  .then(() => {
+    console.log('Book table created successfully!');
+  })
+  .catch((error) => {
+    console.error('Unable to create table : ', error);
+  });
 
 module.exports = User;

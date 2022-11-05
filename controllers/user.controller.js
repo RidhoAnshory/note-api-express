@@ -29,7 +29,7 @@ const signup = async (req, res) => {
       username: username,
       email: email,
       password: hashedPassword,
-      uuid: uuidv4(),
+      uuid: uuidv4().replaceAll('-', ''),
     });
 
     const token = jwt.sign(
