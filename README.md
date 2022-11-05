@@ -7,4 +7,5 @@ this is project example of express.js with user authentication
 2. run npm install
 3. create .env file
 4. copy the text from .env.example to the .env file
-5. create the table according the database model
+5. create the table according the database model'
+6. run the app using npm start
