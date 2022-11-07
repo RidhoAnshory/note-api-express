@@ -49,13 +49,6 @@ const Note = db.define(
   },
 );
 
-db.sync()
-  .then(() => {
-    console.log('Book table created successfully!');
-  })
-  .catch((error) => {
-    console.error('Unable to create table : ', error);
-  });
 User.hasMany(Note);
 Note.belongsTo(User, { foreignKey: 'userId' });
 

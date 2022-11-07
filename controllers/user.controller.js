@@ -2,6 +2,7 @@ const userModel = require('../models/user.models');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { generateAccessToken } = require('../middlewares/auth');
 require('dotenv').config();
 
 const signup = async (req, res) => {
@@ -34,10 +35,10 @@ const signup = async (req, res) => {
 
     const token = jwt.sign(
       { email: result.email, id: result.uuid },
-      process.env.APP_SECRET_KEY,
+      process.env.ACCESS_TOKEN_SECRET,
     );
 
-    res.status(201).json({ user: result, token: token });
+    res.status(200).json({ user: result, token: token });
   } catch (error) {
     res.status(500).json({ msg: error.message });
   }
@@ -61,15 +62,52 @@ const signin = async (req, res) => {
     if (!matchPassword) {
       return res.status(400).json({ message: 'Invalid Credentials' });
     }
-    const token = jwt.sign(
-      { email: existingUser.email, id: existingUser.uuid },
-      process.env.APP_SECRET_KEY,
+    const accessToken = generateAccessToken({
+      email: existingUser.email,
+      id: existingUser.uuid,
+    });
+
+    const refreshToken = jwt.sign(
+      {
+        email: existingUser.email,
+        id: existingUser.uuid,
+      },
+      process.env.REFRESH_TOKEN_SECRET,
     );
 
-    res.status(201).json({ user: existingUser, token: token });
+    res.cookie('jwt', refreshToken, {
+      expires: new Date(Date.now() + 36000),
+      httpOnly: true,
+      // secure: true,
+      sameSite: 'None',
+    });
+
+    res.status(200).json({
+      user: existingUser,
+      accessToken: accessToken,
+    });
   } catch (error) {
     res.status(500).json({ msg: error.message });
   }
 };
 
-module.exports = { signup, signin };
+const refreshToken = (req, res) => {
+  const cookies = req.cookies;
+
+  const refreshToken = cookies.jwt;
+
+  if (refreshToken === null)
+    return res.sendStatus(401).json({ message: 'Refresh token not found.' });
+
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+
+    const accessToken = generateAccessToken({
+      email: user.email,
+      id: user.id,
+    });
+    res.json({ accessToken: accessToken });
+  });
+};
+
+module.exports = { signup, signin, refreshToken };

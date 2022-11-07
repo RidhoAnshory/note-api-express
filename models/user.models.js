@@ -46,12 +46,5 @@ const User = db.define(
     freezeTableName: true,
   },
 );
-db.sync()
-  .then(() => {
-    console.log('Book table created successfully!');
-  })
-  .catch((error) => {
-    console.error('Unable to create table : ', error);
-  });
 
 module.exports = User;

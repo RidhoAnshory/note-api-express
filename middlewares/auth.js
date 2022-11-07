@@ -7,18 +7,24 @@ const auth = (req, res, next) => {
 
     if (token) {
       token = token.split(' ')[1];
-      let user = jwt.verify(token, process.env.APP_SECRET_KEY);
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ message: err.message });
 
-      req.userId = user.id;
+        req.id = user.id;
+
+        next();
+      });
     } else {
       res.status(401).json({ message: 'Unauthorized User' });
     }
-
-    next();
   } catch (error) {
     console.log(error);
     res.status(401).json({ message: 'Unauthorized User' });
   }
 };
 
-module.exports = auth;
+const generateAccessToken = (user) => {
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30s' });
+};
+
+module.exports = { auth, generateAccessToken };

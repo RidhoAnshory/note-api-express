@@ -77,7 +77,7 @@ const getNotes = async (req, res) => {
   try {
     const notes = await noteModel.findAll({
       where: {
-        userId: req.userId,
+        userId: req.id,
       },
     });
     res.status(200).json(notes);
